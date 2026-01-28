@@ -1,0 +1,46 @@
+#define eyeSensor 2
+#define buzzer 3
+#define relayPin 4
+
+unsigned long eyeCloseTime = 0;
+bool sleepDetected = false;
+
+void setup() {
+  pinMode(eyeSensor, INPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(relayPin, OUTPUT);
+
+  digitalWrite(buzzer, LOW);
+  digitalWrite(relayPin, LOW);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  int eyeState = digitalRead(eyeSensor);
+
+  if (eyeState == LOW) {   // Eyes closed
+    if (eyeCloseTime == 0) {
+      eyeCloseTime = millis();
+    }
+
+    if ((millis() - eyeCloseTime) > 3000) { // 3 seconds
+      sleepDetected = true;
+    }
+  } else {   // Eyes open
+    eyeCloseTime = 0;
+    sleepDetected = false;
+  }
+
+  if (sleepDetected) {
+    digitalWrite(buzzer, HIGH);
+    digitalWrite(relayPin, HIGH);
+    Serial.println("⚠️ Sleep Detected!");
+  } else {
+    digitalWrite(buzzer, LOW);
+    digitalWrite(relayPin, LOW);
+    Serial.println("Eyes Open");
+  }
+
+  delay(100);
+}
